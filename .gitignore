@@ -1,2 +1,5 @@
 logs/
 nginx.conf.compiled
+json.lua
+copy.lua
+products.json
