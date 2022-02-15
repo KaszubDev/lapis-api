@@ -2,6 +2,7 @@ local lapis = require("lapis")
 local respond_to
 respond_to = require("lapis.application").respond_to
 local json_parser = require("lunajson")
+local json_params = require("lapis.application").json_params
 local products = {
   {
     name = "Computer one",
@@ -38,19 +39,66 @@ do
       end
     }),
     ["/products"] = respond_to({
-      GET = function(self)
+      GET = json_params(function(self)
         local json_products = json_parser.encode(products)
         return json_products
-      end,
-      POST = function(self)
-        return " test"
-      end
+      end),
+      POST = json_params(function(self)
+        products[#products + 1] = {
+          name = self.params.name,
+          price = self.params.price,
+          description = self.params.description,
+          category = self.params.category
+        }
+        return "Product " .. json_parser.encode(products[#products]) .. " has been added"
+      end)
+    }),
+    ["/products/:id"] = respond_to({
+      GET = json_params(function(self)
+        return json_parser.encode(products[tonumber(self.params.id)])
+      end),
+      DELETE = json_params(function(self)
+        table.remove(products, tonumber(self.params.id))
+        local json_products = json_parser.encode(products)
+        return json_products
+      end),
+      PUT = json_params(function(self)
+        products[self.params.id] = {
+          name = self.params.name,
+          price = self.params.price,
+          description = self.params.description,
+          category = self.params.category
+        }
+        return "Product " .. json_parser.encode(products[self.params.id]) .. " has been modified"
+      end)
     }),
     ["/categories"] = respond_to({
-      GET = function(self)
+      GET = json_params(function(self)
         local json_categories = json_parser.encode(categories)
         return json_categories
-      end
+      end),
+      POST = json_params(function(self)
+        categories[#categories + 1] = {
+          name = self.params.name
+        }
+        return "Category " .. json_parser.encode(categories[#categories]) .. " has been added"
+      end)
+    }),
+    ["/categories/:id"] = respond_to({
+      GET = json_params(function(self)
+        return json_parser.encode(categories[tonumber(self.params.id)])
+      end),
+      DELETE = json_params(function(self)
+        table.remove(categories, tonumber(self.params.id))
+        local json_categories = json_parser.encode(categories)
+        return json_categories
+      end),
+      PUT = json_params(function(self)
+        categories[self.params.id] = {
+          name = self.params.name
+        }
+        return "Category " .. json_parser.encode(categories[self.params.id]) .. " has been modified"
+      end)
     })
   }
   _base_0.__index = _base_0
